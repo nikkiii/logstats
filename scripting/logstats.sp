@@ -51,6 +51,8 @@ public OnPluginStart() {
 	g_hCvarSupStats = CreateConVar("sm_logstats_supstats", "0", "Enables/Disables Supplemental stats compat mode", 0, true, 0.0, true, 1.0);
 	
 	g_bSupStats = GetConVarBool(g_hCvarSupStats);
+	
+	HookConVarChange(g_hCvarSupStats, ConVarChange_SupStats);
 
 	HookEvent("player_hurt", Event_PlayerHurt);
 	HookEvent("player_healed", Event_PlayerHealed);
