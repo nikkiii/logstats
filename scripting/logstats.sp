@@ -1,8 +1,19 @@
 #include <sourcemod>
 #include <loghelper>
 
-#define PLUGIN_VERSION "1.0.0"
+#undef REQUIRE_PLUGIN
+#include <updater>
 
+#define PLUGIN_VERSION "1.0.1"
+
+#define UPDATER_URL "http://github.nikkii.us/logstats/master/updater.txt"
+
+new Handle:g_hCvarVersion;
+new Handle:g_hCvarAutoUpdate;
+new Handle:g_hCvarSupStats;
+
+// Emulate supplemental stats
+new bool:g_bSupStats = false;
 new bool:g_bBlockLog = false;
 
 new String:g_aClasses[10][64] = {
@@ -18,6 +29,12 @@ new String:g_aClasses[10][64] = {
 	"engineer"
 };
 
+public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) {
+	MarkNativeAsOptional("Updater_AddPlugin");
+	MarkNativeAsOptional("ReloadPlugin");
+	return APLRes_Success;
+}
+
 public Plugin:myinfo =
 {
 	name = "Logs.tf Stats",
@@ -28,6 +45,13 @@ public Plugin:myinfo =
 };
 
 public OnPluginStart() {
+	g_hCvarVersion = CreateConVar("sm_logstats_version", PLUGIN_VERSION, "LogStats Version", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+
+	g_hCvarAutoUpdate = CreateConVar("sm_logstats_autoupdate", "1", "Enables/Disables Auto Update for LogStats", 0, true, 0.0, true, 1.0);
+	g_hCvarSupStats = CreateConVar("sm_logstats_supstats", "0", "Enables/Disables Supplemental stats compat mode", 0, true, 0.0, true, 1.0);
+	
+	g_bSupStats = GetConVarBool(g_hCvarSupStats);
+
 	HookEvent("player_hurt", Event_PlayerHurt);
 	HookEvent("player_healed", Event_PlayerHealed);
 	HookEvent("player_spawn", Event_PlayerSpawned);
@@ -39,6 +63,50 @@ public OnPluginStart() {
 	
 	LogMapLoad();
 }
+
+public ConVarChange_SupStats(Handle:convar, const String:oldValue[], const String:newValue[]) {
+	g_bSupStats = GetConVarBool(convar);
+}
+
+// Updater support
+public OnAllPluginsLoaded() {
+	CheckUpdater(LibraryExists("updater"));
+}
+
+public OnLibraryAdded(const String:name[]) {
+	if(StrEqual(name, "updater"))
+		CheckUpdater(true);
+}
+
+public OnLibraryRemoved(const String:name[]) {
+	if(StrEqual(name, "updater"))
+		CheckUpdater(false);
+}
+	
+CheckUpdater(bool:hasUpdater = false) {
+	if(hasUpdater && GetConVarBool(g_hCvarAutoUpdate)) {
+		Updater_AddPlugin(UPDATER_URL);
+		
+		decl String:version[12];
+		Format(version, sizeof(version), "%sA", PLUGIN_VERSION);
+		SetConVarString(g_hCvarVersion, version);
+	} else {
+		SetConVarString(g_hCvarVersion, PLUGIN_VERSION);
+	}
+}
+
+public Action:Updater_OnPluginChecking() {
+	if(!GetConVarBool(g_hCvarAutoUpdate)) {
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
+}
+
+public Updater_OnPluginUpdated() {
+	ReloadPlugin();
+}
+
+// Events
 
 public Event_PlayerHealed(Handle:event, const String:name[], bool:dontBroadcast) {
 	new healer = GetClientOfUserId(GetEventInt(event, "healer"));
@@ -57,7 +125,13 @@ public Event_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast) {
 		new damage = GetEventInt(event, "damageamount");
 		decl String:damageProps[64];
 		Format(damageProps, sizeof(damageProps), " (damage \"%d\")", damage);
-		LogPlyrPlyrEvent(client, attacker, "triggered", "damage", false, damageProps);
+		
+		if(g_bSupStats) {
+			// Supstats uses a player event, not player player.
+			LogPlayerEvent(attacker, "triggered", "damage", false, damageProps);
+		} else {
+			LogPlyrPlyrEvent(attacker, client, "triggered", "damage", false, damageProps);
+		}
 	}
 }
 
@@ -75,7 +149,9 @@ public Event_ItemPickup(Handle:event, const String:name[], bool:dontBroadcast) {
 }
 
 public Action:Event_ChargeDeployedPre(Handle:event, const String:name[], bool:dontBroadcast) {
-	g_bBlockLog = true;
+	if(!g_bSupStats) {
+		g_bBlockLog = true;
+	}
 	return Plugin_Continue;
 }
 
