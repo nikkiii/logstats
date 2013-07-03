@@ -1,6 +1,8 @@
 #include <sourcemod>
 #include <loghelper>
 
+#define PLUGIN_VERSION "1.0.0"
+
 new bool:g_bBlockLog = false;
 
 new String:g_aClasses[10][64] = {
@@ -21,7 +23,7 @@ public Plugin:myinfo =
 	name = "Logs.tf Stats",
 	author = "Nikki",
 	description = "Logs additional stats for logs.tf, similar to supstats",
-	version = SOURCEMOD_VERSION,
+	version = PLUGIN_VERSION,
 	url = "http://logs.tf"
 };
 
