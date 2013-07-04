@@ -31,7 +31,6 @@ new String:g_aClasses[10][64] = {
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) {
 	MarkNativeAsOptional("Updater_AddPlugin");
-	MarkNativeAsOptional("ReloadPlugin");
 	return APLRes_Success;
 }
 
