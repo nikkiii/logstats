@@ -132,6 +132,7 @@ public Event_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast) {
 			// Supstats uses a player event, not player player.
 			LogPlayerEvent(attacker, "triggered", "damage", false, damageProps);
 		} else {
+			// LogStats adds a player player event to keep track of damage dealt player -> player
 			LogPlyrPlyrEvent(attacker, client, "triggered", "damage", false, damageProps);
 		}
 	}
