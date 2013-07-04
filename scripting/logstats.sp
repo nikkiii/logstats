@@ -31,7 +31,6 @@ new String:g_aClasses[10][64] = {
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) {
 	MarkNativeAsOptional("Updater_AddPlugin");
-	MarkNativeAsOptional("ReloadPlugin");
 	return APLRes_Success;
 }
 
@@ -132,6 +131,7 @@ public Event_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast) {
 			// Supstats uses a player event, not player player.
 			LogPlayerEvent(attacker, "triggered", "damage", false, damageProps);
 		} else {
+			// LogStats adds a player player event to keep track of damage dealt player -> player
 			LogPlyrPlyrEvent(attacker, client, "triggered", "damage", false, damageProps);
 		}
 	}
