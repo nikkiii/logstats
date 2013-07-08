@@ -4,7 +4,7 @@
 #undef REQUIRE_PLUGIN
 #include <updater>
 
-#define PLUGIN_VERSION "1.0.1"
+#define PLUGIN_VERSION "1.0.2"
 
 #define UPDATER_URL "http://github.nikkii.us/logstats/master/updater.txt"
 
@@ -67,6 +67,10 @@ public OnPluginStart() {
 
 public ConVarChange_SupStats(Handle:convar, const String:oldValue[], const String:newValue[]) {
 	g_bSupStats = GetConVarBool(convar);
+}
+
+public OnMapStart() {
+	GetTeams();
 }
 
 // Updater support
