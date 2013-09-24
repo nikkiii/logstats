@@ -47,7 +47,7 @@ public OnPluginStart() {
 	g_hCvarVersion = CreateConVar("sm_logstats_version", PLUGIN_VERSION, "LogStats Version", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_DONTRECORD);
 
 	g_hCvarAutoUpdate = CreateConVar("sm_logstats_autoupdate", "1", "Enables/Disables Auto Update for LogStats", 0, true, 0.0, true, 1.0);
-	g_hCvarSupStats = CreateConVar("sm_logstats_supstats", "0", "Enables/Disables Supplemental stats compat mode", 0, true, 0.0, true, 1.0);
+	g_hCvarSupStats = CreateConVar("sm_logstats_supstats", "1", "Enables/Disables Supplemental stats compat mode (Default: Enabled)", 0, true, 0.0, true, 1.0);
 	
 	g_bSupStats = GetConVarBool(g_hCvarSupStats);
 	
